@@ -34,7 +34,7 @@ description: 在需要为项目建立或整理文档与工程规范体系时使�
 6. **配自动化**：读 `references/automation.md`，拷入 `assets/automation/index-generation.md`；按栈选一个发布记录分片。**索引默认自动生成，不手写**
 7. 用 `assets/templates/_agents.md` 生成根 `AGENTS.md`；已存在则追加合并，**不替换**
 8. 启用了 ADR 等长周期文档时，按 `assets/templates/` 建 `docs/templates/`
-9. 用 `assets/templates/_root-readme.md` 生成根 `README.md`；**已存在则一字不改**。根 `CHANGELOG.md` 不在此步创建——它归发布记录工具生成
+9. 读 `references/root-readme.md`，用 `assets/templates/_root-readme.md` 生成根 `README.md`——它是**产品门面**，写法与文档不同；**已存在则一字不改**。根 `CHANGELOG.md` 不在此步创建——它归发布记录工具生成
 10. **跑 `gen_index.py` 生成所有索引区**，再跑自检
 11. 报告：建了什么、为什么、下一步该写什么
 
@@ -90,6 +90,7 @@ python <skill目录>/scripts/verify_docs.py <项目根目录>
 | 什么时候读 | 读哪个 |
 |---|---|
 | 判断目录要不要建、文档该放哪 | `references/structure.md` |
+| 写根 README（产品门面，与文档写法不同） | `references/root-readme.md` |
 | 写 README 或补 frontmatter | `references/metadata.md` |
 | 项目已有文档，要整理 | `references/retrofit.md` |
 | 选规范、加分片、回写模板 | `references/standards.md` |
