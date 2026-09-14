@@ -20,17 +20,38 @@
 `gen_index.py` 是零依赖的，任何技术栈直接可用，没有选型问题。
 标记约定与命令见分片 `assets/automation/index-generation.md`。
 
-## 发布记录：按栈选分片
+## 发布记录：按栈与渠道选分片
 
-读 `assets/automation/` 下的分片，按各自 `applies_when` 挑选：
+读 `assets/automation/` 下的分片，按各自 `applies_when` 挑选。
+**三条路是互补关系，不是互斥选项**——先看渠道，再看栈：
 
-| 分片 | 适用 |
-|---|---|
-| `changelog-node.md` | Node，且以 npm / pnpm / yarn 工作区组织 |
-| `changelog-generic.md` | 其他任何技术栈，提交信息遵循约定式格式 |
+| 分片 | 适用 | 成本 |
+|---|---|---|
+| `changelog-platform.md` | 托管在 GitHub / GitLab，且以平台 Release 分发 | **零安装**，只需配置平台侧分类文件 |
+| `changelog-node.md` | Node，且以 npm / pnpm / yarn 工作区组织 | 装一个 devDependency |
+| `changelog-generic.md` | 其他任何技术栈，提交信息遵循约定式格式 | 装一个单文件可执行程序 |
 
-**没有匹配的分片时：不启用 `docs/releases/`，CHANGELOG 也不强求。**
-宁可暂时没有发布记录，也不要留一份手工维护、注定过期的。
+优先顺序：**能用平台自带的就用平台自带的**。只有在「使用者从包管理器拿包、需要仓库内
+`CHANGELOG.md`」时才需要后两者。
+
+平台 notes 与仓库内 CHANGELOG 的分工、以及如何按分发渠道取舍，见 `changelog-platform.md`。
+
+**三条都不适用时**（例如项目根本不用 Git）：不启用 `docs/releases/`，CHANGELOG 也不强求。
+宁可暂时没有发布记录，也不要留一份手工维护、注定过期的。这个兜底很少会被触发——
+它的存在是为了明确「没有就是没有」，而不是给手工维护留后门。
+
+## 索引区块总览
+
+`gen_index.py` 维护三类区块，按需使用，不强制都有：
+
+| 区块 | 内容 | 谁来定 |
+|---|---|---|
+| `gen:docs` | 本目录的文档表 | 完全由 frontmatter 生成 |
+| `gen:subdirs` | 直接子目录表 | 完全由目录结构生成 |
+| `gen:nav` | 按读者角色的入口导航 | **条目由人写**，生成器只按目标是否存在启停 |
+
+`gen:nav` 是唯一「人写内容」的区块，因为「我想安装并使用系统 → 用户指南」这种映射
+需要判断，推导不出来。它的启停机制见 `assets/automation/index-generation.md`。
 
 ## 文档站
 

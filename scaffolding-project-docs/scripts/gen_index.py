@@ -30,6 +30,13 @@ BLOCK_RE = re.compile(
     r"(<!-- gen:(docs|subdirs):start -->)(.*?)(<!-- gen:(?:docs|subdirs):end -->)",
     re.S,
 )
+NAV_BLOCK_RE = re.compile(
+    r"(<!-- gen:nav:start -->)(.*?)(<!-- gen:nav:end -->)",
+    re.S,
+)
+NAV_LINK_RE = re.compile(r"\]\(([^)\s#]+)\)")
+NAV_OFF_PREFIX = "<!-- gen:nav-off: "
+NAV_OFF_SUFFIX = " -->"
 DOCS_HEADER = "| 文档 | 一句话 | 状态 |\n|---|---|---|"
 SUBDIRS_HEADER = "| 目录 | 职责 |\n|---|---|"
 
@@ -80,16 +87,60 @@ def render_subdirs(directory: Path, exempt: set) -> str:
     return SUBDIRS_HEADER + "\n" + "\n".join(rows) if rows else ""
 
 
+def nav_targets(line: str) -> list:
+    """取出一行里的相对链接目标；外部链接与锚点不参与存在性判断。"""
+    return [
+        t
+        for t in NAV_LINK_RE.findall(line)
+        if "://" not in t and not t.startswith(("mailto:", "#"))
+    ]
+
+
+def process_nav(body: str, base: Path) -> str:
+    """按目标是否存在，启停导航区的条目。
+
+    导航条目由人写（角色标签是人给的），但目标目录未必已启用。直接留着就是死链，
+    直接删掉又会在目录建好后找不回来。所以采取**注释隐藏**而非删除：
+    目标不存在时整行包进 `gen:nav-off` 注释，目标一旦出现就自动恢复。
+    """
+    out = []
+    for raw in body.strip("\n").splitlines():
+        line = raw.strip()
+        hidden = line.startswith(NAV_OFF_PREFIX) and line.endswith(NAV_OFF_SUFFIX)
+        inner = line[len(NAV_OFF_PREFIX):-len(NAV_OFF_SUFFIX)].strip() if hidden else line
+
+        if not inner.startswith(("-", "*")):
+            out.append(raw)  # 非条目行（标题、说明）原样保留
+            continue
+
+        targets = nav_targets(inner)
+        alive = all((base / t).exists() for t in targets) if targets else True
+        out.append(inner if alive else NAV_OFF_PREFIX + inner + NAV_OFF_SUFFIX)
+    return "\n".join(out)
+
+
 def regenerate(readme: Path, exempt: set) -> str:
     text = read(readme)
     directory = readme.parent
 
-    def replace(m: re.Match) -> str:
+    def replace_block(m: re.Match) -> str:
         start, kind, end = m.group(1), m.group(2), m.group(4)
         body = render_docs(directory) if kind == "docs" else render_subdirs(directory, exempt)
         return f"{start}\n{body}\n{end}" if body else f"{start}\n{end}"
 
-    return BLOCK_RE.sub(replace, text)
+    def replace_nav(m: re.Match) -> str:
+        return f"{m.group(1)}\n{process_nav(m.group(2), directory)}\n{m.group(3)}"
+
+    return NAV_BLOCK_RE.sub(replace_nav, BLOCK_RE.sub(replace_block, text))
+
+
+def nav_hidden(text: str) -> int:
+    """统计被隐藏的导航条目数，供报告使用。"""
+    return sum(
+        line.strip().startswith(NAV_OFF_PREFIX)
+        for m in NAV_BLOCK_RE.finditer(text)
+        for line in m.group(2).splitlines()
+    )
 
 
 def target_readmes(docs: Path, exempt: set) -> list:
@@ -123,7 +174,7 @@ def compute(root: Path):
 def out_of_sync(root: Path) -> list:
     """供 verify_docs 调用：返回 [(相对路径, 说明)]。"""
     updates, _ = compute(root)
-    return [(p.relative_to(root).as_posix(), "索引生成区与 frontmatter 不同步") for p, _ in updates]
+    return [(p.relative_to(root).as_posix(), "索引区与源不同步（文档或导航目标已变）") for p, _ in updates]
 
 
 def main(argv=None) -> int:
@@ -140,7 +191,7 @@ def main(argv=None) -> int:
     for p, new in updates:
         rel = p.relative_to(root).as_posix()
         if check:
-            print(f"ERROR {rel}: 索引生成区与 frontmatter 不同步")
+            print(f"ERROR {rel}: 索引区与源不同步")
         else:
             write_preserving_eol(p, new)
             print(f"UPDATED {rel}")

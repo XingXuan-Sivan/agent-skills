@@ -33,6 +33,8 @@ CODE_PATH_RE = re.compile(r"`([^`\n]+\.(?:md|json|yaml|yml|toml|py|ts|java))`")
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s#]+)")
 PLACEHOLDER_RE = re.compile(
     r"^\s*(?:[-*]\s*)?(?:待补充|待定|待实现|占位|TBD|TODO|Coming soon)\s*$", re.I)
+# HTML 注释在渲染时不可见，链接与索引检查必须先剔除，否则隐藏条目会被误判
+COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
 
 
 @dataclass
@@ -202,19 +204,37 @@ def iter_md(docs: Path, exempt: set):
 
 
 def check_dir_readmes(docs: Path, exempt: set, root: Path) -> list:
+    """每个非空目录都要有 README。
+
+    只含子目录的中间层也要——否则它在上级目录的索引里不可见（生成器跳过没有 README 的子目录），
+    整棵子树会从导航中消失。空目录同样报错。
+    """
     out = []
-    for d in sorted({f.parent for f in iter_md(docs, exempt)}):
-        if d == docs:
+    seen = set()
+    for p in sorted(docs.rglob("*")):
+        parts = p.relative_to(docs).parts
+        if any(part in exempt for part in parts):
             continue
+        if p.is_file():
+            seen.add(p.parent)
+            continue
+        if p == docs:
+            continue
+        seen.add(p)
+        if not any(p.iterdir()):
+            out.append(Finding("error", rel(p, root), "空目录：不建没有内容的目录"))
+    seen.discard(docs)
+    for d in sorted(seen):
         if not (d / "README.md").exists():
-            out.append(Finding("error", rel(d, root), "目录有文档但缺少 README.md"))
+            out.append(Finding("error", rel(d, root), "目录非空但缺少 README.md"))
     return out
 
 
 def check_links(files, root: Path) -> list:
     out = []
     for f in files:
-        for target in LINK_RE.findall(f.read_text(encoding="utf-8-sig")):
+        text = COMMENT_RE.sub("", f.read_text(encoding="utf-8-sig"))
+        for target in LINK_RE.findall(text):
             if "://" in target or target.startswith("mailto:"):
                 continue
             if not (f.parent / target).exists():
@@ -230,7 +250,7 @@ def check_orphans(docs: Path, exempt: set, root: Path) -> list:
         index = f.parent / "README.md"
         if not index.exists():
             continue
-        if f.name not in index.read_text(encoding="utf-8-sig"):
+        if f.name not in COMMENT_RE.sub("", index.read_text(encoding="utf-8-sig")):
             out.append(Finding("error", rel(f, root), "孤儿文档：未被同目录 README 引用"))
     return out
 

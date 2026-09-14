@@ -77,7 +77,9 @@
 
 ## 6. 生成区不是模板
 
-目录 `README.md` 里的 `<!-- gen:docs:start -->` / `<!-- gen:subdirs:start -->` 区块
-**由 `scripts/gen_index.py` 填写，不要手写内容**。
+目录 `README.md` 里的 `<!-- gen:docs:start -->` / `<!-- gen:subdirs:start -->` / `<!-- gen:nav:start -->` 区块
+**由 `scripts/gen_index.py` 维护，不要手写内容**（`gen:nav` 的条目例外——那部分由人写，生成器只启停）。
 
-生成后立刻跑一次生成器，再跑校验；生成区与 frontmatter 不同步会被 `verify_docs.py` 报为 error。
+生成后立刻跑一次生成器，再跑校验；生成区与源不同步会被 `verify_docs.py` 报为 error。
+
+链接与索引检查会先剔除 HTML 注释，因此在 `gen:nav-off` 里被隐藏的条目不会产生死链告警。
