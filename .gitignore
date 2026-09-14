@@ -1,3 +1,6 @@
+# 验收夹具（临时，不属于交付物）
+_acceptance/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -52,7 +52,12 @@ def parse_frontmatter(text: str) -> tuple[dict, str]:
 
     只支持标量与顶层列表。行内注释仅在值是单个 token 时才剥离，避免误伤
     含空格的正文型值（例如中文 summary 里出现「 # 」）。
+
+    读取一律使用 utf-8-sig：带 BOM 的 Markdown 在 Windows 上很常见
+    （记事本、PowerShell 重定向、部分编辑器配置都会产生），若不剥离，
+    首行不等于 `---`，整个 frontmatter 会被忽略并报出一堆假错误。
     """
+    text = text.lstrip("\ufeff")
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         return {}, text
@@ -90,7 +95,7 @@ def parse_frontmatter(text: str) -> tuple[dict, str]:
 
 
 def read_meta(path: Path) -> dict:
-    return parse_frontmatter(path.read_text(encoding="utf-8"))[0]
+    return parse_frontmatter(path.read_text(encoding="utf-8-sig"))[0]
 
 
 def is_nav(path: Path) -> bool:
@@ -123,7 +128,7 @@ def check_summary_single_line(files, root: Path) -> list:
     for f in files:
         if is_nav(f):
             continue
-        lines = f.read_text(encoding="utf-8").splitlines()
+        lines = f.read_text(encoding="utf-8-sig").splitlines()
         for i, line in enumerate(lines):
             if line.startswith("summary:") and i + 1 < len(lines) and lines[i + 1][:1].isspace():
                 out.append(Finding("error", rel(f, root), "summary 必须为单行"))
@@ -151,7 +156,7 @@ def check_placeholders(files, root: Path) -> list:
     for f in files:
         if is_nav(f):
             continue
-        body = parse_frontmatter(f.read_text(encoding="utf-8"))[1]
+        body = parse_frontmatter(f.read_text(encoding="utf-8-sig"))[1]
         meaningful = [ln for ln in body.splitlines() if ln.strip() and not ln.startswith("#")]
         if not meaningful:
             out.append(Finding("error", rel(f, root), "空占位文档：只有标题没有正文"))
@@ -165,7 +170,7 @@ def check_superseded_adr(files, root: Path) -> list:
     for f in files:
         meta = read_meta(f)
         if meta.get("type") == "adr" and meta.get("status") == "superseded":
-            body = parse_frontmatter(f.read_text(encoding="utf-8"))[1]
+            body = parse_frontmatter(f.read_text(encoding="utf-8-sig"))[1]
             if not LINK_RE.search(body):
                 out.append(Finding("warning", rel(f, root), "superseded 的 ADR 应链接到替代它的 ADR"))
     return out
@@ -207,7 +212,7 @@ def check_dir_readmes(docs: Path, exempt: set, root: Path) -> list:
 def check_links(files, root: Path) -> list:
     out = []
     for f in files:
-        for target in LINK_RE.findall(f.read_text(encoding="utf-8")):
+        for target in LINK_RE.findall(f.read_text(encoding="utf-8-sig")):
             if "://" in target or target.startswith("mailto:"):
                 continue
             if not (f.parent / target).exists():
@@ -223,7 +228,7 @@ def check_orphans(docs: Path, exempt: set, root: Path) -> list:
         index = f.parent / "README.md"
         if not index.exists():
             continue
-        if f.name not in index.read_text(encoding="utf-8"):
+        if f.name not in index.read_text(encoding="utf-8-sig"):
             out.append(Finding("error", rel(f, root), "孤儿文档：未被同目录 README 引用"))
     return out
 
@@ -233,7 +238,7 @@ def check_agents_paths(root: Path) -> list:
     if not agents.exists():
         return [Finding("error", "AGENTS.md", "缺少 AGENTS.md")]
     out = []
-    for p in CODE_PATH_RE.findall(agents.read_text(encoding="utf-8")):
+    for p in CODE_PATH_RE.findall(agents.read_text(encoding="utf-8-sig")):
         if not (root / p).exists():
             out.append(Finding("error", "AGENTS.md", f"引用的路径不存在：{p}"))
     return out
@@ -250,7 +255,7 @@ def run(root: Path) -> list:
     if not readme.exists():
         return [Finding("error", "docs/README.md", "缺少 docs/README.md")]
 
-    exempt = BUILTIN_EXEMPT | parse_exemptions(readme.read_text(encoding="utf-8"))
+    exempt = BUILTIN_EXEMPT | parse_exemptions(readme.read_text(encoding="utf-8-sig"))
     doc_files, all_files = collect(docs, exempt)
 
     out: list = []
