@@ -7,13 +7,18 @@
 
 **一句话说明这是什么、给谁用、解决什么问题**
 
-<!-- gen-note: 徽章按需增删，只留有信息量的；装饰性徽章是噪音。没有就整行删掉 -->
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+<!-- gen-note: 徽章按项目实际填写，不要照抄示例值。只留有信息量的——许可证、版本、构建状态、下载量；
+     装饰性徽章是噪音。没有徽章、或项目尚未确定许可证，就删掉整行。示例写法：
+     [![License](https://img.shields.io/badge/license-<许可证标识>-blue.svg)](LICENSE)
+     [![Version](https://img.shields.io/badge/version-<版本号>-blue.svg)]() -->
 
 <!-- gen-note: 章节超过 6 个时再加这行锚点导航，否则删掉 -->
 [快速开始](#快速开始) · [特性](#特性) · [文档](#文档)
 
 </div>
+
+<!-- gen-note: 若目标平台的渲染器不在 HTML 块内部解析 markdown，上面 div 里的标题会不生效。
+     遇到这种情况改用 <h1 align="center"> 形式，两种写法的对比见 references/root-readme.md -->
 
 ---
 
@@ -41,7 +46,8 @@
 
 完整文档见 [`docs/`](docs/README.md)。
 
-<!-- gen-note: 没有许可、贡献或联系方式就整节删除，不要留空标题 -->
+<!-- gen-note: 没有许可、贡献或联系方式就整节删除，不要留空标题。
+     许可证名称与年份按项目实际填写，不要照抄 -->
 ## 许可
 
 本项目采用……许可证。
