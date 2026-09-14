@@ -34,9 +34,19 @@
 
 ## 3. 分片命名
 
+**规范分片**（`assets/standards/`）——讲规则：
+
 - `universal.md` 必备
 - 技术栈分片：`<lang>.md`、`backend-<lang>.md`、`frontend-<framework>.md`
 - 领域分片：直接用领域名，如 `git.md`、`testing.md`
+
+**自动化分片**（`assets/automation/`）——讲工具链：
+
+- `index-generation.md`：索引生成，任何项目都适用
+- `changelog-<stack>.md`：发布记录生成，按栈选一个（如 `changelog-node.md`、`changelog-generic.md`）
+
+分片都带 `applies_when` 自我声明适用条件。**拷入项目时删掉 `applies_when`**，并**去掉栈后缀**——
+一个项目只会启用一份发布记录方案，落为 `docs/development/standards/changelog.md` 即可。
 
 ## 4. 占位符
 
@@ -61,6 +71,13 @@
 ## 生成时的行为
 
 - **先列目录再看文件**，不要假设有哪些模板存在
-- 类型化模板按文档类型取用；结构性模板按目标文件名取用
+- 类型化模板按文档类型取用；结构性模板按目标文件名取用；分片按 `applies_when` 取用
 - 模板里的示例行、示例表格**必须替换成真实内容**。留着示例会同时污染文档和校验结果
 - 结构性模板生成后，按项目实际情况删减不适用的段落（例如 `AGENTS.md` 里未启用分片的路由行）
+
+## 6. 生成区不是模板
+
+目录 `README.md` 里的 `<!-- gen:docs:start -->` / `<!-- gen:subdirs:start -->` 区块
+**由 `scripts/gen_index.py` 填写，不要手写内容**。
+
+生成后立刻跑一次生成器，再跑校验；生成区与 frontmatter 不同步会被 `verify_docs.py` 报为 error。

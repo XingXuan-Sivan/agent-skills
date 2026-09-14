@@ -2,35 +2,20 @@
 
 这里是本项目的统一文档入口。文档描述当前代码与公开契约；历史决策与发布记录只说明当时发生了什么。
 
+<!-- 按项目实际的读者角色删改下面的条目；指向未启用目录的条目必须删掉 -->
+
 ## 我想……
 
 - **安装并使用系统** → [用户指南](guides/user/README.md)
 - **开发扩展** → [开发者指南](guides/developer/README.md)
-- **参与项目开发** → [开发流程](development/README.md)
+- **参与项目开发** → [开发文档](development/README.md)
 - **理解系统设计** → [架构文档](development/architecture/README.md)
 - **查精确字段或契约** → [参考资料](guides/reference/README.md)
-- **查看某次发布** → [发布资料](releases/README.md)
 
-## 目录职责
+## 目录
 
-| 目录 | 收录什么 |
-|---|---|
-| `guides/user/` | 面向使用者的安装、使用与配置说明 |
-| `guides/developer/` | 面向外部接入方的扩展开发说明 |
-| `guides/faq/` | 高频问题 |
-| `guides/reference/` | 配置项、环境变量、事件与钩子索引 |
-| `development/standards/` | 编码、Git 等强制约定 |
-| `development/architecture/` | 当前有效的系统设计 |
-| `development/decisions/` | 历史技术决策记录 |
-| `development/rfcs/` | 尚未定稿的提案 |
-| `development/requirements/` | 已冻结的需求基线 |
-| `operations/` | 测试策略与性能记录 |
-| `api/` | 对外提供的接口契约 |
-| `templates/` | 各类文档的模板 |
-| `assets/` | 文档引用的图片与附件 |
-| `releases/` | 版本归档 |
-
-> 上表只保留本项目实际启用的目录；未启用的行必须删除。
+<!-- gen:subdirs:start -->
+<!-- gen:subdirs:end -->
 
 ## 元数据规范
 
@@ -49,6 +34,8 @@ summary: 一句话说明本文内容，必须单行。
 - `status` 是唯一允许「只改元数据、不改正文」的字段。
 - 长周期文档（`adr`/`rfc`/`design`/`architecture`）另加 `related`；`adr` 另加 `supersedes`；`adr`/`rfc` 另加 `decided_at`。
 - `sources` 选填，用于标注本文对应的代码或配置路径。
+
+各目录 `README.md` 里的索引表**由生成器维护**，不要手写。
 
 ## 事实源
 

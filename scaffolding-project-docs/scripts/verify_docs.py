@@ -7,6 +7,8 @@
 用法：
     python verify_docs.py [项目根目录]
 
+若同目录下存在 gen_index.py，还会顺带校验索引生成区是否与 frontmatter 同步。
+
 退出码：有 error 返回 1，否则返回 0。
 """
 from __future__ import annotations
@@ -249,6 +251,20 @@ def collect(docs: Path, exempt: set):
     return [f for f in files if not is_nav(f)], files
 
 
+def check_index_sync(root: Path) -> list:
+    """检查由 gen_index.py 生成的索引区是否与 frontmatter 同步。
+
+    gen_index 与 verify_docs 互相引用会成环，所以这里做函数内延迟导入：
+    gen_index 在模块级导入 verify_docs，而本函数只在 verify_docs 装载完成后才执行。
+    gen_index.py 不存在时静默跳过——只拷贝 verify_docs 的项目仍可正常使用。
+    """
+    try:
+        from gen_index import out_of_sync
+    except ImportError:
+        return []
+    return [Finding("error", path, message) for path, message in out_of_sync(root)]
+
+
 def run(root: Path) -> list:
     docs = root / "docs"
     readme = docs / "README.md"
@@ -268,6 +284,7 @@ def run(root: Path) -> list:
     out += check_orphans(docs, exempt, root)
     out += check_agents_paths(root)
     out += check_superseded_adr(doc_files, root)
+    out += check_index_sync(root)
     return out
 
 
