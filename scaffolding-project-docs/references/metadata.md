@@ -53,7 +53,7 @@ sources:              # 选填：事实源路径，帮 AI 定位代码
 
 取值约定：ADR 的「已接受」用 `active`；被否决的提案用 `rejected`，否决记录本身有价值，不要删除。
 
-**`README.md` 豁免**：所有 `README.md`（含 `docs/README.md` 与各目录 README）是导航文件，不写 frontmatter。它们的元数据由 L1 路由与 L2 表格承担，再写一层是冗余。
+**`README.md` 豁免**：所有 `README.md`（根 README、`docs/README.md`、各目录 README）都是导航文件，不写 frontmatter。它们的元数据由 L1 路由与 L2 表格承担，再写一层是冗余。
 
 ## 防腐化规则
 

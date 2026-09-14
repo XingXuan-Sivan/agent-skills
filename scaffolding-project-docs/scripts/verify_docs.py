@@ -35,6 +35,8 @@ PLACEHOLDER_RE = re.compile(
     r"^\s*(?:[-*]\s*)?(?:待补充|待定|待实现|占位|TBD|TODO|Coming soon)\s*$", re.I)
 # HTML 注释在渲染时不可见，链接与索引检查必须先剔除，否则隐藏条目会被误判
 COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+# 模板里写给生成方的指令，产物中不应残留
+GEN_NOTE_RE = re.compile(r"<!--\s*gen-note:")
 
 
 @dataclass
@@ -260,7 +262,8 @@ def check_agents_paths(root: Path) -> list:
     if not agents.exists():
         return [Finding("error", "AGENTS.md", "缺少 AGENTS.md")]
     out = []
-    for p in CODE_PATH_RE.findall(agents.read_text(encoding="utf-8-sig")):
+    text = COMMENT_RE.sub("", agents.read_text(encoding="utf-8-sig"))
+    for p in CODE_PATH_RE.findall(text):
         if not (root / p).exists():
             out.append(Finding("error", "AGENTS.md", f"引用的路径不存在：{p}"))
     return out
@@ -285,6 +288,19 @@ def check_index_sync(root: Path) -> list:
     return [Finding("error", path, message) for path, message in out_of_sync(root)]
 
 
+def check_gen_notes(files, root: Path) -> list:
+    """模板里写给生成方的指令不应出现在产物中。
+
+    `<!-- gen-note: ... -->` 是生成指令（例如「这一节没有内容就删掉」），
+    生成时必须一并清除。残留说明生成方没做完，而且读代码的人会看到自相矛盾的注释。
+    """
+    out = []
+    for f in files:
+        if GEN_NOTE_RE.search(f.read_text(encoding="utf-8-sig")):
+            out.append(Finding("error", rel(f, root), "模板生成指令未清理（gen-note）"))
+    return out
+
+
 def run(root: Path) -> list:
     docs = root / "docs"
     readme = docs / "README.md"
@@ -293,6 +309,9 @@ def run(root: Path) -> list:
 
     exempt = BUILTIN_EXEMPT | parse_exemptions(readme.read_text(encoding="utf-8-sig"))
     doc_files, all_files = collect(docs, exempt)
+    # 根 README 与 AGENTS.md 同样是体系的一部分，链接与生成指令一并检查
+    root_files = [p for p in (root / "README.md", root / "AGENTS.md") if p.exists()]
+    scanned = all_files + root_files
 
     out: list = []
     out += check_frontmatter(doc_files, root)
@@ -300,10 +319,11 @@ def run(root: Path) -> list:
     out += check_long_form_fields(doc_files, root)
     out += check_placeholders(doc_files, root)
     out += check_dir_readmes(docs, exempt, root)
-    out += check_links(all_files, root)
+    out += check_links(scanned, root)
     out += check_orphans(docs, exempt, root)
     out += check_agents_paths(root)
     out += check_superseded_adr(doc_files, root)
+    out += check_gen_notes(scanned, root)
     out += check_index_sync(root)
     return out
 

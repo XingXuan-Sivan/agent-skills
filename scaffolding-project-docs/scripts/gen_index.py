@@ -35,6 +35,7 @@ NAV_BLOCK_RE = re.compile(
     re.S,
 )
 NAV_LINK_RE = re.compile(r"\]\(([^)\s#]+)\)")
+NAV_CODE_RE = re.compile(r"`([^`\n]+)`")
 NAV_OFF_PREFIX = "<!-- gen:nav-off: "
 NAV_OFF_SUFFIX = " -->"
 DOCS_HEADER = "| 文档 | 一句话 | 状态 |\n|---|---|---|"
@@ -88,12 +89,20 @@ def render_subdirs(directory: Path, exempt: set) -> str:
 
 
 def nav_targets(line: str) -> list:
-    """取出一行里的相对链接目标；外部链接与锚点不参与存在性判断。"""
-    return [
-        t
-        for t in NAV_LINK_RE.findall(line)
-        if "://" not in t and not t.startswith(("mailto:", "#"))
-    ]
+    """取出一行里指向文件的路径：markdown 链接目标与行内代码里的路径。
+
+    两种形式都要认——目录 README 用链接，`AGENTS.md` 的路由表用行内代码。
+    只有看起来像路径的（含 `/` 或以 `.md` 结尾）才参与存在性判断，
+    避免把 `pnpm changeset` 这类行内命令误当成路径。
+    """
+    out = []
+    for t in NAV_LINK_RE.findall(line) + NAV_CODE_RE.findall(line):
+        t = t.strip()
+        if "://" in t or t.startswith(("mailto:", "#")):
+            continue
+        if "/" in t or t.endswith(".md"):
+            out.append(t)
+    return out
 
 
 def process_nav(body: str, base: Path) -> str:
@@ -143,12 +152,23 @@ def nav_hidden(text: str) -> int:
     )
 
 
-def target_readmes(docs: Path, exempt: set) -> list:
-    return [
+def target_files(root: Path, docs: Path, exempt: set) -> list:
+    """需要维护生成区的文件：docs 下的所有 README，加上根 AGENTS.md 与根 README。
+
+    `AGENTS.md` 的路由表同样是「条目指向路径」，同样会因目标不存在而产生悬空引用。
+    """
+    files = [
         p
         for p in sorted(docs.rglob("README.md"))
         if not any(part in exempt for part in p.relative_to(docs).parts[:-1])
     ]
+    files += [p for p in (root / "AGENTS.md", root / "README.md") if p.exists()]
+    return files
+
+
+def has_blocks(text: str) -> bool:
+    """文件里是否存在任意一种生成区（docs / subdirs / nav）。"""
+    return bool(BLOCK_RE.search(text) or NAV_BLOCK_RE.search(text))
 
 
 def compute(root: Path):
@@ -158,12 +178,19 @@ def compute(root: Path):
     if not readme.exists():
         return [], []
     exempt = BUILTIN_EXEMPT | parse_exemptions(read(readme))
+    dir_readmes = {
+        p
+        for p in sorted(docs.rglob("README.md"))
+        if not any(part in exempt for part in p.relative_to(docs).parts[:-1])
+    }
 
     updates, missing = [], []
-    for rm in target_readmes(docs, exempt):
+    for rm in target_files(root, docs, exempt):
         old = read(rm)
-        if not BLOCK_RE.search(old):
-            missing.append(rm)
+        if not has_blocks(old):
+            # 目录 README 理应有索引区；根 AGENTS.md / README 可以没有
+            if rm in dir_readmes:
+                missing.append(rm)
             continue
         new = regenerate(rm, exempt)
         if new != old:

@@ -1,14 +1,15 @@
 # Agent instructions
 
-在分析、设计或修改本仓库前，必须完整阅读：
+动手前先读下列文档。通用规范必读；其余条目按本次任务类型选择。
 
-- `docs/development/standards/universal.md`
+<!-- 条目由生成器按目标是否存在自动启停；未启用的规范不必手工删 -->
 
-涉及专项工作时，还必须阅读：
-
+<!-- gen:nav:start -->
+- 通用规范：`docs/development/standards/universal.md`
 - 提交与分支：`docs/development/standards/git.md`
-- 后端代码：`docs/development/standards/backend-java.md`
-- 文档规范：`docs/README.md`
+- 文档组织与元数据：`docs/README.md`
+- Java 后端代码：`docs/development/standards/backend-java.md`
+<!-- gen:nav:end -->
 
 工作约束：
 
