@@ -43,7 +43,7 @@
 ### 安装
 
 ```bash
-npx skills add https://gitee.com/XingXuan-Sivan/scaffolding-project-docs.git -g -y
+npx skills add https://gitee.com/XingXuan-Sivan/agent-skills.git -g -y
 ```
 
 `-g` 装到全局，不加则装到当前项目。默认用符号链接，之后 `npx skills update` 一键更新。
@@ -63,7 +63,14 @@ skills/
    ├─ SKILL.md        # 入口：元数据 + 指令
    ├─ references/     # 按需加载的说明文档
    ├─ assets/         # 模板与规范分片
-   └─ scripts/        # 可执行脚本
+   ├─ scripts/        # 可执行脚本
+   └─ LICENSE         # 随技能目录一起分发
 ```
 
 `skills/` 是 Agent Skills 生态约定的技能容器目录，安装工具会在这里自动发现技能。
+
+## 许可
+
+[MIT](LICENSE)。
+
+每个技能目录下也带一份 `LICENSE`——因为安装工具只拷贝技能目录本身，副本里需要一并保留版权声明。
