@@ -1,0 +1,186 @@
+{
+  "version": "1.1",
+  "description": "场景类 Skills 推荐清单，供 init-skills 第二至四层推荐时参考。可按需独立更新，无需修改 SKILL.md 或 recommended.json。本清单为参考基线，实际推荐时应结合 skills.sh 实时排行与用户具体情况灵活组合，不可机械照搬。具体 Skill 的安装源和最新信息通过 skills.sh 实时检索获取。",
+  "categories": {
+    "document": {
+      "name": "文档处理",
+      "description": "Office 文档和 PDF 的创建、编辑与处理",
+      "layer": 2,
+      "skills": [
+        {
+          "name": "docx",
+          "display_name": "Word 文档处理",
+          "description": "创建、读取、编辑 Word (.docx) 文档，支持格式化、目录、页码、页眉等",
+          "required": false,
+          "keywords": ["word", "docx", "文档", "报告", "备忘录", "模板"]
+        },
+        {
+          "name": "pdf",
+          "display_name": "PDF 文档处理",
+          "description": "PDF 文档的创建、提取、合并、转换等处理",
+          "required": false,
+          "keywords": ["pdf", "文档转换", "提取", "合并"]
+        },
+        {
+          "name": "xlsx",
+          "display_name": "Excel 表格处理",
+          "description": "Excel 电子表格的创建、编辑、数据分析与格式化",
+          "required": false,
+          "keywords": ["excel", "xlsx", "表格", "数据", "电子表格", "csv"]
+        },
+        {
+          "name": "pptx",
+          "display_name": "PowerPoint 演示文稿处理",
+          "description": "PowerPoint 演示文稿的创建、编辑与美化",
+          "required": false,
+          "keywords": ["ppt", "pptx", "演示文稿", "幻灯片", "presentation"]
+        }
+      ]
+    },
+    "developer-required": {
+      "name": "开发者必装",
+      "description": "面向开发者的核心 Skills，在第三层（开发者必装）中优先推荐。superpowers 默认安装整套（包含所有子技能），安装后建议在开发任务时将 using-superpowers 注入上下文以激活整套技能",
+      "layer": 3,
+      "skills": [
+        {
+          "name": "superpowers",
+          "display_name": "Superpowers 开发元技能套件",
+          "description": "开发必装元技能套件，包含 using-superpowers 等一系列子技能，帮助 Agent 在开发任务中建立技能发现与使用机制",
+          "required": true,
+          "install_note": "默认安装整套（包含所有子技能），除非用户明确要求只安装其中某个子技能",
+          "post_install": "建议在开发任务时将 using-superpowers 注入上下文以激活整套技能",
+          "keywords": ["开发", "superpowers", "元技能", "技能发现", "dev"]
+        },
+        {
+          "name": "frontend-design",
+          "display_name": "前端设计",
+          "description": "高质量前端 UI 与界面设计，生成独特、有品味的视觉输出，告别千篇一律的默认样式",
+          "required": false,
+          "keywords": ["前端", "UI", "界面", "设计", "视觉"]
+        },
+        {
+          "name": "vue-best-practices",
+          "display_name": "Vue 最佳实践",
+          "description": "Vue.js 开发最佳实践，涵盖 Composition API、script setup、TypeScript 等规范，确保代码质量和一致性",
+          "required": false,
+          "keywords": ["vue", "vue3", "composition api", "script setup", "typescript"]
+        },
+        {
+          "name": "agent-browser",
+          "display_name": "浏览器自动化测试",
+          "description": "浏览器自动化交互与测试，可对 Web 应用进行端到端测试和 UI 自动化操作",
+          "required": false,
+          "install_note": "引入后可能需先配置浏览器环境才能正常使用；部分 Agent 应用可能已内置该技能及环境，安装前先检查以免重复安装或重复配置",
+          "keywords": ["浏览器", "测试", "自动化", "e2e", "playwright", "ui测试"]
+        },
+        {
+          "name": "improve-codebase-architecture",
+          "display_name": "代码架构优化",
+          "description": "分析并改进现有代码库的架构设计，提升可维护性、可扩展性与代码质量",
+          "required": false,
+          "keywords": ["架构", "重构", "代码质量", "设计模式", "可维护性"]
+        },
+        {
+          "name": "mcp-builder",
+          "display_name": "MCP Server 构建器",
+          "description": "构建 MCP (Model Context Protocol) Server，扩展 Agent 工具能力以接入外部 API、数据库等服务",
+          "required": false,
+          "keywords": ["mcp", "server", "协议", "工具扩展", "api"]
+        }
+      ]
+    },
+    "creative": {
+      "name": "创意设计",
+      "description": "算法艺术、主题设计、画布设计、品牌视觉等创意类 Skills",
+      "layer": 4,
+      "skills": [
+        {
+          "name": "algorithmic-art",
+          "display_name": "算法艺术",
+          "description": "使用代码生成算法艺术作品（p5.js），探索创意编程的可能性",
+          "required": false,
+          "keywords": ["艺术", "算法", "p5.js", "生成艺术", "创意"]
+        },
+        {
+          "name": "theme-factory",
+          "display_name": "主题工厂",
+          "description": "为各类输出内容（幻灯片、文档、页面等）统一应用视觉主题，确保风格一致",
+          "required": false,
+          "keywords": ["主题", "样式", "视觉", "配色", "风格"]
+        },
+        {
+          "name": "canvas-design",
+          "display_name": "画布设计",
+          "description": "在 Canvas 上创建精美的视觉设计和海报，支持丰富的图形与排版效果",
+          "required": false,
+          "keywords": ["画布", "设计", "canvas", "海报", "视觉"]
+        },
+        {
+          "name": "brand-guidelines",
+          "display_name": "品牌规范",
+          "description": "根据品牌色彩、字体、Logo 等规范生成一致的设计输出，保持品牌视觉统一",
+          "required": false,
+          "keywords": ["品牌", "规范", "设计系统", "色彩", "字体"]
+        }
+      ]
+    },
+    "office": {
+      "name": "通用办公",
+      "description": "日常办公协作类 Skills，通常需与「文档处理」和「创意设计」类别结合使用，形成完整的办公工作流",
+      "layer": 4,
+      "skills": [
+        {
+          "name": "internal-comms",
+          "display_name": "内部沟通",
+          "description": "生成企业内部沟通文档（公告、周报、会议纪要、状态报告等）",
+          "required": false,
+          "keywords": ["沟通", "周报", "公告", "会议", "企业内部"]
+        },
+        {
+          "name": "doc-coauthoring",
+          "display_name": "文档协同撰写",
+          "description": "AI 辅助的文档协同创作，支持结构化长文档的分步撰写、审阅与迭代",
+          "required": false,
+          "keywords": ["协同", "文档", "撰写", "审阅", "长文"]
+        }
+      ]
+    },
+    "deploy": {
+      "name": "部署与运维",
+      "description": "项目部署、CI/CD 配置等运维类 Skills",
+      "layer": 4,
+      "skills": [
+        {
+          "name": "vercel-deploy",
+          "display_name": "Vercel 部署",
+          "description": "将 Web 项目一键部署到 Vercel 平台，支持 OAuth 登录和自动构建",
+          "required": false,
+          "keywords": ["部署", "vercel", "发布", "上线", "deploy"]
+        }
+      ]
+    }
+  },
+  "presets": {
+    "minimal": {
+      "name": "最小安装",
+      "description": "仅安装核心元技能，适合刚接触 Skills 的新手",
+      "categories": ["meta"]
+    },
+    "standard": {
+      "name": "标准安装",
+      "description": "元技能 + 文档处理，覆盖日常办公需求",
+      "categories": ["meta", "document"]
+    },
+    "developer": {
+      "name": "开发者安装",
+      "description": "元技能 + 文档处理 + 开发者必装 + 部署运维",
+      "categories": ["meta", "document", "developer-required", "deploy"]
+    },
+    "full": {
+      "name": "完整安装",
+      "description": "安装所有常见官方 Skills",
+      "categories": ["meta", "document", "developer-required", "creative", "office", "deploy"]
+    }
+  },
+  "note": "以上仅为推荐分类和 Skill 名称参考，实际安装源和版本信息通过 skills.sh 实时检索获取。推荐时不可机械照搬清单，应根据用户实际需求、技术栈和 skills.sh 实时排行灵活组合，综合推荐。国内大厂 Skill（如讯飞、字节等）因通常需要额外 API Key 配置，不在此清单中预先列出，如用户有中文处理等需求，应通过 skills.sh 或 npx skills find 实时检索。"
+}

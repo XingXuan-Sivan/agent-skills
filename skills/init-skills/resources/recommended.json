@@ -1,0 +1,28 @@
+{
+  "version": "2.1",
+  "description": "元技能（Meta Skills）推荐清单，供 init-skills 第一层（核心元技能）推荐时参考。场景类 Skills 推荐清单已独立至 scenario-recommendations.json。",
+  "categories": {
+    "meta": {
+      "name": "元技能",
+      "description": "用于创建、发现和管理其他 Skills 的基础工具",
+      "priority": 1,
+      "skills": [
+        {
+          "name": "find-skills",
+          "display_name": "Find Skills",
+          "description": "搜索和发现新 Skill，当你需要某个功能但不知是否有现成 Skill 时自动推荐",
+          "required": true,
+          "keywords": ["搜索skill", "find skill", "发现技能", "技能推荐"]
+        },
+        {
+          "name": "skill-creator",
+          "display_name": "Skill Creator",
+          "description": "用 AI 创建新 Skill 的元技能，按照标准规范生成 SKILL.md 和目录结构",
+          "required": true,
+          "keywords": ["创建skill", "create skill", "新建技能", "技能模板"]
+        }
+      ]
+    }
+  },
+  "note": "场景类 Skills（文档处理、开发者必装、创意设计、通用办公、部署运维等）的推荐清单见 resources/scenario-recommendations.json。具体 Skill 的安装源和最新信息通过 skills.sh 实时检索获取。"
+}
