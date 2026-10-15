@@ -1,7 +1,14 @@
 {
-  "version": "1.2",
-  "description": "场景类 Skills 推荐清单，供 init-skills 第二至四层推荐时参考。可按需独立更新，无需修改 SKILL.md 或 recommended.json。本清单为参考基线，实际推荐时应结合 skills.sh 实时排行与用户具体情况灵活组合，不可机械照搬。具体 Skill 的安装源和最新信息通过 skills.sh 实时检索获取。",
+  "version": "1.6",
+  "description": "场景类 Skills 推荐清单，供 init-skills 推荐时使用。其类别与 recommended.json 的类别按 layer 合并排序后逐个推荐。可按需独立更新，无需修改 SKILL.md 或 recommended.json。本清单为参考基线，实际推荐时应结合 skills.sh 实时排行与用户具体情况灵活组合，不可机械照搬。具体 Skill 的安装源和最新信息通过 skills.sh 实时检索获取。",
   "field_notes": {
+    "name": "条目的标识名，安装与查重时用它，也是 pairs_with 引用的键。",
+    "display_name": "面向用户的展示名，推荐时优先用它。",
+    "description": "一句话说明它能做什么，推荐时转成用户能懂的说法，不要照抄原文。",
+    "required": "true 表示该类别下建议必装，推荐时标为必装；其余条目按用户场景取舍。",
+    "keywords": "典型场景与检索关键词。推荐时挑最贴近用户场景的几个，作为「典型场景」展示。",
+    "layer": "类别级字段：所属层级，数值越小越先推荐。同一层的多个类别可以合并成一次推荐。",
+    "always": "类别级字段：为 true 时该类别对所有用户都推荐，不因场景不符而跳过。省略即按场景判断是否推荐。",
     "kind": "条目类型：skill（默认，走 skills.sh 安装）/ cli（独立命令行工具）/ plugin（编辑器插件）。省略即视为 skill。",
     "install": "仅在安装方式不是 skills.sh 默认路径时才出现，用于覆盖默认安装方式。method 取值：skills / npm-global / brew / plugin / script / clone；command 为完整安装命令；verify 为安装后的验证命令。",
     "requires": "安装或首次使用前必须先具备的条件。type 取值：runtime（运行时或本地工具链）/ credential（账号、API Key、OAuth 授权）/ service（本地服务或端口）；level 取值：required（默认）/ optional。省略该字段表示无额外前置。",
@@ -15,7 +22,7 @@
       "name": "文档处理",
       "description": "Office 文档和 PDF 的创建、编辑与处理",
       "layer": 2,
-      "category_note": "这四个是官方技能，默认假设运行环境已预装各自需要的工具链（LibreOffice、pandoc、poppler 及对应语言包）。在未预装这些工具链的 Agent 应用中使用时，需要先安装，否则只有部分能力可用。",
+      "category_note": "本类别中的 docx、pdf、xlsx、pptx 四个官方技能，其 SKILL.md 里声明的 `preinstalled` 工具链（LibreOffice、pandoc、poppler、pypdf、markitdown、pptxgenjs 等）是 Anthropic 自家运行镜像的前提，不是通用环境事实。这些依赖是否可用，由当前 Agent 应用提供的运行时与宿主系统环境共同决定，需要实际检测。缺失时技能通常不报错而是静默降级，只保留部分能力；此外部分脚本在 Windows 上存在已知兼容问题，依赖齐全也未必可用，因此产物是否合格要以真实打开验证为准，不能只看退出码。该说明不适用于本类别的第三方条目，它们的前置条件以各自条目的 `requires` 和该技能自己的声明为准。",
       "skills": [
         {
           "name": "docx",
@@ -60,6 +67,24 @@
             { "type": "runtime", "name": "pptxgenjs / python-pptx / markitdown", "level": "optional" }
           ],
           "keywords": ["ppt", "pptx", "演示文稿", "幻灯片", "presentation"]
+        },
+        {
+          "name": "ppt-master",
+          "display_name": "PPT Master 演示文稿工作流",
+          "description": "从主题或现成文档生成可编辑的原生 PowerPoint（原生形状、切换与动画、图表表格、按讲者备注生成旁白音频），也支持反向重建已有页面、美化成品、从图片生成 PPT、套用自己的 .pptx 模板",
+          "required": false,
+          "requires": [
+            { "type": "runtime", "name": "Python 3（技能脚本全部为 Python；Windows 上文档里的 python3 命令要改用 python）" },
+            { "type": "runtime", "name": "python-pptx / PyYAML / Pillow / numpy / XlsxWriter / skia-pathops / uharfbuzz" },
+            { "type": "runtime", "name": "ffmpeg + ffprobe（旁白转视频、音频混音时需要）", "level": "optional" },
+            { "type": "runtime", "name": "playwright + Chromium（生成后的视觉复核渲染需要）", "level": "optional" },
+            { "type": "runtime", "name": "pandoc（.doc/.odt/.rtf 等小众格式转 Markdown 时需要）", "level": "optional" },
+            { "type": "credential", "name": "AI 配图 / 图库 / 云端配音的 API Key（默认旁白后端 edge-tts 免费且无需 Key）", "level": "optional" }
+          ],
+          "post_install": "在技能目录执行 pip install -r requirements.txt 补上 Python 依赖；多数脚本只用标准库，但 SVG→PPTX 主路径需要 python-pptx 等",
+          "pairs_with": ["pptx"],
+          "install_note": "体积明显偏大：整套约 37 MB、13,000+ 个文件，其中约 24 MB 是随技能打包的模板资产（Tabler 图标、CC0 音效、14 套风格包），装之前值得先让用户知道。技能本体是 MIT，但它列出的 PyMuPDF 是 AGPL-3.0（仅 PDF→Markdown 用到，不拿 PDF 当输入源可以跳过）。每次运行会先执行 scripts/attribution_guard.py 做完整性校验，返回非零即停止，这是技能自己的门禁设计，不要试图绕过或修复。所有 Key 写在 .env 里，查找顺序为进程环境 → 当前目录 → 技能目录 → 克隆根目录 → ~/.ppt-master/.env。它和 pptx 是两种路线：官方 pptx 偏「直接改 OOXML 包」，ppt-master 是一整套带路由的工作流（生成 / 图片转 PPT / 美化 / 套模板 / 编辑原生 PPT），按场景二选一即可。",
+          "keywords": ["ppt", "pptx", "演示文稿", "幻灯片", "deck", "美化", "模板", "旁白", "视频"]
         }
       ]
     },
@@ -242,7 +267,7 @@
     },
     "full": {
       "name": "完整安装",
-      "description": "安装所有常见官方 Skills",
+      "description": "安装所有类别的常见 Skills",
       "categories": ["meta", "document", "developer-required", "creative", "office", "deploy"]
     }
   },

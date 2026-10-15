@@ -1,11 +1,21 @@
 {
-  "version": "2.1",
-  "description": "元技能（Meta Skills）推荐清单，供 init-skills 第一层（核心元技能）推荐时参考。场景类 Skills 推荐清单已独立至 scenario-recommendations.json。",
+  "version": "2.3",
+  "description": "元技能（Meta Skills）推荐清单，供 init-skills 推荐时使用。场景类 Skills 推荐清单已独立至 scenario-recommendations.json。两份清单的类别按 layer 合并排序后逐个推荐，清单可独立更新，无需修改 SKILL.md。",
+  "field_notes": {
+    "name": "条目的标识名，安装与查重时用它。",
+    "display_name": "面向用户的展示名，推荐时优先用它。",
+    "description": "一句话说明它能做什么，推荐时转成用户能懂的说法，不要照抄原文。",
+    "required": "true 表示建议必装，推荐时标为必装；其余条目按用户场景取舍。",
+    "keywords": "典型场景与检索关键词。推荐时挑最贴近用户场景的几个，作为「典型场景」展示。",
+    "layer": "类别级字段：所属层级，数值越小越先推荐。同层的类别可以合并成一次推荐。",
+    "always": "类别级字段：为 true 时该类别对所有用户都推荐，不因场景不符而跳过。省略即按场景判断是否推荐。"
+  },
   "categories": {
     "meta": {
       "name": "元技能",
       "description": "用于创建、发现和管理其他 Skills 的基础工具",
-      "priority": 1,
+      "layer": 1,
+      "always": true,
       "skills": [
         {
           "name": "find-skills",
