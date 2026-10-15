@@ -1,6 +1,6 @@
 ---
 name: init-skills
-version: 2.2
+version: 2.3
 description: 引导用户初始化/安装 Agent 应用的基础与常用 Skills，通过 skills.sh 聚合平台实时检索与推荐，支持分层渐进式安装
 trigger: [初始化skills, 安装skills, 配置skills环境, 初始化技能, 安装技能, 配置技能环境, 初始化agent skills, setup skills, init skills]
 ---
@@ -121,12 +121,12 @@ trigger: [初始化skills, 安装skills, 配置skills环境, 初始化技能, �
 
 这是日常办公中使用频率最高的一类 Skill：
 
-| Skill | 用途 | 典型场景 |
-|-------|------|---------|
-| `docx` | Word 文档创建与编辑 | 报告、简历、合同 |
-| `pdf` | PDF 处理（提取、合并、转换、OCR） | 阅读文献、表单处理 |
-| `xlsx` | Excel 表格处理与数据分析 | 数据报表、CSV 处理 |
-| `pptx` | PowerPoint 演示文稿创建 | 答辩、汇报、演讲 |
+| Skill | 用途 | 典型场景 | 前置/配置 |
+|-------|------|---------|----------|
+| `docx` | Word 文档创建与编辑 | 报告、简历、合同 | LibreOffice、pandoc |
+| `pdf` | PDF 处理（提取、合并、转换、OCR） | 阅读文献、表单处理 | poppler-utils |
+| `xlsx` | Excel 表格处理与数据分析 | 数据报表、CSV 处理 | LibreOffice |
+| `pptx` | PowerPoint 演示文稿创建 | 答辩、汇报、演讲 | LibreOffice |
 
 **推荐策略**：
 
@@ -141,13 +141,15 @@ trigger: [初始化skills, 安装skills, 配置skills环境, 初始化技能, �
 > - **xlsx**：Excel 表格处理，做数据报表、处理 CSV 都靠它
 > - **pptx**：PPT 演示文稿，答辩、汇报、演讲一键生成
 >
+> 这几个默认是按「运行环境已经预装好所需工具链」来设计的，实际会用到 LibreOffice、pandoc、poppler 这类外部工具。如果你现在用的应用没有预装，我可以先帮你确认一遍，缺的再决定要不要补——不补也能用，只是格式转换、渲染校验一类的功能会受限。
+>
 > 结合你的场景，我建议至少装 XXX 和 XXX，其余按需。你觉得哪些对你有用？
 >
 > （示例回答："全都要" / "docx 和 pdf 就够了" / "先装 docx，其他以后再说" / "先跳过这一层"）
 >
 > 安装级别沿用你之前选的全局（或项目级），如果有哪个想单独调整告诉我即可。
 
-用户确认后，通过 skills.sh 检索对应 Skill 的最新安装源，逐一执行安装。安装前执行重复检查，已安装的不再重复安装。**不再重复询问安装级别**（除非用户主动提出调整）。
+用户确认后，通过 skills.sh 检索对应 Skill 的最新安装源。安装前先对照清单条目的 `requires` 字段检查环境，缺前置条件时向用户说明「装上能用到哪些能力、缺了会少哪些」，由用户决定是否补齐；随后执行重复检查，已安装的不再重复安装。**不再重复询问安装级别**（除非用户主动提出调整）。
 
 ---
 
@@ -155,14 +157,16 @@ trigger: [初始化skills, 安装skills, 配置skills环境, 初始化技能, �
 
 如果用户在第二步中表明自己是开发者或涉及开发相关任务，则在此步骤中优先推荐以下开发者必装 Skills。若用户场景完全不涉及开发，则直接跳过本层进入 Step 4/4。
 
-| Skill | 用途 | 重要性 |
-|-------|------|--------|
-| `superpowers` | 开发必装元技能套件，包含 `using-superpowers` 等一系列子技能，帮助 Agent 在开发任务中建立技能发现与使用机制 | 🔴 必装 |
-| `frontend-design` | 高质量前端 UI 与界面设计，生成独特、有品味的视觉输出，告别千篇一律的默认样式 | 🟡 推荐 |
-| `vue-best-practices` | Vue.js 开发最佳实践，涵盖 Composition API、`<script setup>`、TypeScript 等规范，确保代码质量和一致性 | 🟡 推荐 |
-| `agent-browser` | 浏览器自动化交互与测试，可进行端到端测试和 UI 自动化。**注意**：引入后可能需配置浏览器环境，部分应用可能已内置，先检查避免重复安装或重复配置 | 🟡 推荐 |
-| `improve-codebase-architecture` | 分析并改进现有代码库的架构设计，提升可维护性、可扩展性与代码质量 | 🟡 推荐 |
-| `mcp-builder` | 构建 MCP Server 扩展 Agent 工具能力，接入外部 API、数据库等服务 | 🟡 推荐 |
+| Skill | 用途 | 重要性 | 前置/配置 |
+|-------|------|--------|----------|
+| `superpowers` | 开发必装元技能套件，包含 `using-superpowers` 等一系列子技能，帮助 Agent 在开发任务中建立技能发现与使用机制 | 🔴 必装 | 装完需激活整套（见下） |
+| `openspec` | 写代码前先与 AI 对齐「提案 → 规格 → 设计 → 任务」的规格驱动开发工作流，产出可纳入版本管理的 `openspec/` 目录，适合中大型改动与多人协作。**注意**：它不是 skills.sh 技能而是独立 CLI，走 npm 全局安装，包名必须带 scope（`@fission-ai/openspec`） | 🟡 推荐 | Node.js ≥20.19、npm 全局安装 |
+| `frontend-design` | 高质量前端 UI 与界面设计，生成独特、有品味的视觉输出，告别千篇一律的默认样式 | 🟡 推荐 | 无 |
+| `vue-best-practices` | Vue.js 开发最佳实践，涵盖 Composition API、`<script setup>`、TypeScript 等规范，确保代码质量和一致性 | 🟡 推荐 | 无 |
+| `agent-browser` | 浏览器自动化交互与测试，可进行端到端测试和 UI 自动化。**注意**：引入后可能需配置浏览器环境，部分应用可能已内置，先检查避免重复安装或重复配置 | 🟡 推荐 | 浏览器环境 |
+| `improve-codebase-architecture` | 分析并改进现有代码库的架构设计，提升可维护性、可扩展性与代码质量 | 🟡 推荐 | 无 |
+| `understand-anything` | 把代码库转成可探索的交互式知识图谱，按架构层级分组并生成引导学习路径，支持语义搜索与单文件深讲；适合接手陌生项目、新人上手，或 vibe coding 之后回头梳理自己的项目 | 🟡 推荐 | 首次全量分析较耗 token；无需 API Key |
+| `mcp-builder` | 构建 MCP Server 扩展 Agent 工具能力，接入外部 API、数据库等服务 | 🟡 推荐 | 无 |
 
 **推荐策略**：
 
@@ -171,21 +175,23 @@ trigger: [初始化skills, 安装skills, 配置skills环境, 初始化技能, �
 > 既然你平时涉及开发工作，这几个 Skills 能让你的开发体验提升一个档次：
 >
 > - **superpowers**：这是开发场景的"必备元技能套件"，安装后会自动包含 `using-superpowers` 等一整套子技能。它能让 Agent 在每次开发对话中自动建立技能发现与使用机制，大幅提升协作效率。**建议在开发任务时将 `using-superpowers` 注入上下文以激活整套技能**。默认安装整套（包含所有子技能），除非你明确说只想装其中某个
+> - **openspec**：如果你经常做中大型改动，或者需要和 AI 先把需求聊清楚再动手，它能帮你把「提案 → 规格 → 设计 → 任务」这套流程固化下来，产物是一份能进版本库的 `openspec/` 目录。要注意它**不是普通 Skill 而是独立的命令行工具**，走 npm 全局安装，装完还要在项目里跑一次 `openspec init`，而且装它需要 Node.js 20.19 以上。它和 superpowers 是两个各自独立的项目，没有官方打通，同时用时靠人手动衔接，会有一点摩擦，建议先把其中一个用顺了再组合
 > - **frontend-design**：帮你做出独特、有品味的前端界面设计，无论是新项目搭建还是旧界面翻新都适用
 > - **vue-best-practices**：如果你用 Vue，这个 Skill 会确保代码严格遵循 Composition API、`<script setup>` 等最佳实践，避免写出不符合规范的代码
 > - **agent-browser**：浏览器自动化测试利器，能做端到端测试和 UI 自动化。需要注意，引入后可能要配置浏览器环境才能正常使用，部分 Agent 应用可能已经内置了它，我会先帮你检查一下，避免重复安装或重复配置
 > - **improve-codebase-architecture**：代码架构层面的"体检+优化"，帮你分析现有代码结构问题并给出改进方案
+> - **understand-anything**：接手陌生项目、或者 vibe coding 一阵子之后想回头搞清楚自己写了什么，它会把代码库转成一张可探索的知识图谱，按架构层级分组，还能生成一条按依赖顺序的引导学习路径。**第一次分析会通读整个代码库，比较费 token，建议在有套餐或订阅的时候跑**，之后就只做增量了。它不需要额外配 API Key
 > - **mcp-builder**：用来构建 MCP Server，让你的 Agent 能接入外部 API、数据库等，扩展能力边界
 >
-> `superpowers` 我强烈建议必装，其他按你的技术栈和实际需求来选。你觉得呢？
+> `superpowers` 我强烈建议必装，其他按你的技术栈和实际需求来选。**需要额外装东西或提前做配置的，我在上面都标出来了**，装之前会再和你确认一遍。你觉得呢？
 >
 > 安装级别沿用之前的偏好，有需要调整的单独说。
 >
-> （示例回答："六个都要" / "superpowers + vue-best-practices + agent-browser" / "只要 superpowers" / "先跳过这一层"）
+> （示例回答："八个都要" / "superpowers + vue-best-practices + agent-browser" / "只要 superpowers 和 understand-anything" / "先跳过这一层"）
 
 **安装方式**：
 
-用户确认后，通过 skills.sh 检索获取实际安装源，再执行安装。`superpowers` 默认安装整套（包含所有子技能），除非用户明确要求只安装其中某个子技能。安装前执行重复检查，已安装的不再重复安装。
+用户确认后，按条目的 `install` 字段决定安装方式：有 `install` 的按其 `command` 执行，装完用 `verify` 验证；没有 `install` 的走默认路径，通过 skills.sh 检索获取实际安装源后执行安装。装完后如条目带 `post_install`，提示用户在项目内完成该动作。`superpowers` 默认安装整套（包含所有子技能），除非用户明确要求只安装其中某个子技能。安装前执行重复检查，已安装的不再重复安装。
 
 ---
 
@@ -318,6 +324,7 @@ trigger: [初始化skills, 安装skills, 配置skills环境, 初始化技能, �
 - skills.sh 聚合平台上的 Skill 来自公开 GitHub 仓库，安装前建议查看其 Star 数、更新频率和社区反馈
 - 优先选择 skills.sh 上排名靠前、更新活跃的 Skill
 - 安装前通读 SKILL.md，确认操作范围在预期之内
+- 安装前对照推荐清单条目的 `requires` 字段，确认运行时依赖（如 Node.js 版本、LibreOffice）、凭据（如账号授权、API Key）和本地服务是否已具备；凭据一律由用户自行配置，不要写进 Skill 文件或提交到版本库
 - 避免使用超过 6 个月未更新的 Skill
 - 详细安全评估指南见 `references/security.md`
 
@@ -327,4 +334,4 @@ trigger: [初始化skills, 安装skills, 配置skills环境, 初始化技能, �
 - skills.sh 使用指南：`references/repos.md`
 - 安全评估指南：`references/security.md`
 - 元技能推荐清单：`resources/recommended.json`
-- 场景 Skill 推荐清单：`resources/scenario-recommendations.json`
+- 场景 Skill 推荐清单：`resources/scenario-recommendations.json`（条目字段语义见该文件顶部的 `field_notes`）

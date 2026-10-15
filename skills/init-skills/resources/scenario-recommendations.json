@@ -1,17 +1,31 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "description": "场景类 Skills 推荐清单，供 init-skills 第二至四层推荐时参考。可按需独立更新，无需修改 SKILL.md 或 recommended.json。本清单为参考基线，实际推荐时应结合 skills.sh 实时排行与用户具体情况灵活组合，不可机械照搬。具体 Skill 的安装源和最新信息通过 skills.sh 实时检索获取。",
+  "field_notes": {
+    "kind": "条目类型：skill（默认，走 skills.sh 安装）/ cli（独立命令行工具）/ plugin（编辑器插件）。省略即视为 skill。",
+    "install": "仅在安装方式不是 skills.sh 默认路径时才出现，用于覆盖默认安装方式。method 取值：skills / npm-global / brew / plugin / script / clone；command 为完整安装命令；verify 为安装后的验证命令。",
+    "requires": "安装或首次使用前必须先具备的条件。type 取值：runtime（运行时或本地工具链）/ credential（账号、API Key、OAuth 授权）/ service（本地服务或端口）；level 取值：required（默认）/ optional。省略该字段表示无额外前置。",
+    "post_install": "安装完成后必须在项目内执行的一次性动作，省略表示装完即用。",
+    "install_note": "无法结构化、只能用人话说明的补充：已知坑、包名陷阱、平台差异、成本提示等。",
+    "pairs_with": "与清单内其他条目的关系（常一起使用，或互为替代的两种选择），值为其他条目的 name。",
+    "category_note": "类别级的共同前置说明，适用于该类别下所有条目。"
+  },
   "categories": {
     "document": {
       "name": "文档处理",
       "description": "Office 文档和 PDF 的创建、编辑与处理",
       "layer": 2,
+      "category_note": "这四个是官方技能，默认假设运行环境已预装各自需要的工具链（LibreOffice、pandoc、poppler 及对应语言包）。在未预装这些工具链的 Agent 应用中使用时，需要先安装，否则只有部分能力可用。",
       "skills": [
         {
           "name": "docx",
           "display_name": "Word 文档处理",
           "description": "创建、读取、编辑 Word (.docx) 文档，支持格式化、目录、页码、页眉等",
           "required": false,
+          "requires": [
+            { "type": "runtime", "name": "LibreOffice（soffice）" },
+            { "type": "runtime", "name": "pandoc" }
+          ],
           "keywords": ["word", "docx", "文档", "报告", "备忘录", "模板"]
         },
         {
@@ -19,6 +33,10 @@
           "display_name": "PDF 文档处理",
           "description": "PDF 文档的创建、提取、合并、转换等处理",
           "required": false,
+          "requires": [
+            { "type": "runtime", "name": "poppler-utils（pdftotext / pdftoppm）" },
+            { "type": "runtime", "name": "pytesseract + pdf2image", "level": "optional" }
+          ],
           "keywords": ["pdf", "文档转换", "提取", "合并"]
         },
         {
@@ -26,6 +44,10 @@
           "display_name": "Excel 表格处理",
           "description": "Excel 电子表格的创建、编辑、数据分析与格式化",
           "required": false,
+          "requires": [
+            { "type": "runtime", "name": "LibreOffice（soffice）" },
+            { "type": "runtime", "name": "openpyxl / pandas / markitdown", "level": "optional" }
+          ],
           "keywords": ["excel", "xlsx", "表格", "数据", "电子表格", "csv"]
         },
         {
@@ -33,6 +55,10 @@
           "display_name": "PowerPoint 演示文稿处理",
           "description": "PowerPoint 演示文稿的创建、编辑与美化",
           "required": false,
+          "requires": [
+            { "type": "runtime", "name": "LibreOffice（soffice）" },
+            { "type": "runtime", "name": "pptxgenjs / python-pptx / markitdown", "level": "optional" }
+          ],
           "keywords": ["ppt", "pptx", "演示文稿", "幻灯片", "presentation"]
         }
       ]
@@ -50,6 +76,25 @@
           "install_note": "默认安装整套（包含所有子技能），除非用户明确要求只安装其中某个子技能",
           "post_install": "建议在开发任务时将 using-superpowers 注入上下文以激活整套技能",
           "keywords": ["开发", "superpowers", "元技能", "技能发现", "dev"]
+        },
+        {
+          "name": "openspec",
+          "display_name": "OpenSpec 规格驱动开发",
+          "description": "写代码前先与 AI 对齐「提案 → 规格 → 设计 → 任务」的规格驱动开发工作流，产出可纳入版本管理的 openspec/ 目录，适合中大型改动与多人协作",
+          "required": false,
+          "kind": "cli",
+          "install": {
+            "method": "npm-global",
+            "command": "npm install -g @fission-ai/openspec@latest",
+            "verify": "openspec --version"
+          },
+          "requires": [
+            { "type": "runtime", "name": "Node.js", "version": ">=20.19.0" }
+          ],
+          "post_install": "在项目根目录执行 openspec init，生成 openspec/ 目录并写入编辑器斜杠命令；之后升级包时用 openspec update 刷新命令",
+          "pairs_with": ["superpowers"],
+          "install_note": "它不是 skills.sh 技能，而是独立的命令行工具。包名必须带 scope：官方的 @fission-ai/openspec；npm 上无 scope 的 openspec 是 2019 年的无关空包，写成 npx openspec@latest 会装错。与 superpowers 是两个彼此独立的项目——没有 API 集成，也没有文件格式约定，同时使用时靠「OpenSpec 出规格 → superpowers 实现 → 回 OpenSpec 归档」人工桥接，并注意技能触发优先级、上下文互相污染、命令冲突三个已知摩擦，建议先分别跑通各自闭环再组合。遥测默认开启，可用 openspec config set telemetry.enabled false 关闭。",
+          "keywords": ["规格驱动", "sdd", "spec", "openspec", "需求对齐", "提案", "opsx"]
         },
         {
           "name": "frontend-design",
@@ -70,6 +115,9 @@
           "display_name": "浏览器自动化测试",
           "description": "浏览器自动化交互与测试，可对 Web 应用进行端到端测试和 UI 自动化操作",
           "required": false,
+          "requires": [
+            { "type": "runtime", "name": "浏览器环境（Chrome / Chromium）" }
+          ],
           "install_note": "引入后可能需先配置浏览器环境才能正常使用；部分 Agent 应用可能已内置该技能及环境，安装前先检查以免重复安装或重复配置",
           "keywords": ["浏览器", "测试", "自动化", "e2e", "playwright", "ui测试"]
         },
@@ -79,6 +127,19 @@
           "description": "分析并改进现有代码库的架构设计，提升可维护性、可扩展性与代码质量",
           "required": false,
           "keywords": ["架构", "重构", "代码质量", "设计模式", "可维护性"]
+        },
+        {
+          "name": "understand-anything",
+          "display_name": "Understand-Anything 代码库知识图谱",
+          "description": "把任意代码库转成可探索的交互式知识图谱：按架构层级分组、生成按依赖顺序的引导学习路径、支持语义搜索与单文件深讲，适合接手陌生项目、新人上手，或 vibe coding 之后回头梳理自己的项目",
+          "required": false,
+          "kind": "plugin",
+          "requires": [
+            { "type": "runtime", "name": "Node.js（仅离线查看导出的看板时需要）", "version": ">=18", "level": "optional" }
+          ],
+          "post_install": "在项目内执行 /understand 生成知识图谱，再用 /understand-dashboard 打开交互看板",
+          "install_note": "Claude Code 走插件市场 /plugin marketplace add Egonex-AI/Understand-Anything；其他平台用官方 install.sh（Windows 为 install.ps1）一行安装；skills.sh 上也有官方发布的 understand、understand-dashboard 技能。无需 API Key，用的是当前会话的模型。首次执行 /understand 会分析整个代码库，大型项目 token 消耗较大，建议在有套餐或订阅时运行，之后默认增量更新。图谱是普通 JSON，可提交入库供团队共享；他人用 npx 打开看板时不需要 LLM 和 API Key。",
+          "keywords": ["代码库理解", "知识图谱", "上手", "onboarding", "架构", "学习", "understand"]
         },
         {
           "name": "mcp-builder",
@@ -153,8 +214,11 @@
         {
           "name": "vercel-deploy",
           "display_name": "Vercel 部署",
-          "description": "将 Web 项目一键部署到 Vercel 平台，支持 OAuth 登录和自动构建",
+          "description": "将 Web 项目一键部署到 Vercel 平台，自动完成构建与发布",
           "required": false,
+          "requires": [
+            { "type": "credential", "name": "Vercel 账号（浏览器 OAuth 授权）" }
+          ],
           "keywords": ["部署", "vercel", "发布", "上线", "deploy"]
         }
       ]
@@ -182,5 +246,5 @@
       "categories": ["meta", "document", "developer-required", "creative", "office", "deploy"]
     }
   },
-  "note": "以上仅为推荐分类和 Skill 名称参考，实际安装源和版本信息通过 skills.sh 实时检索获取。推荐时不可机械照搬清单，应根据用户实际需求、技术栈和 skills.sh 实时排行灵活组合，综合推荐。国内大厂 Skill（如讯飞、字节等）因通常需要额外 API Key 配置，不在此清单中预先列出，如用户有中文处理等需求，应通过 skills.sh 或 npx skills find 实时检索。"
+  "note": "以上仅为推荐分类和 Skill 名称参考，实际安装源和版本信息通过 skills.sh 实时检索获取。推荐时不可机械照搬清单，应根据用户实际需求、技术栈和 skills.sh 实时排行灵活组合，综合推荐。条目声明的前置条件（requires）应在安装前向用户明示并确认环境已满足；需要额外凭据的 Skill（如国内大厂的 API Key）同样按此方式标注后正常收录，不再一律排除。"
 }
